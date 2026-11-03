@@ -7,8 +7,8 @@ module "eks" {
   cluster_endpoint_public_access  = true
   cluster_endpoint_private_access = true
 
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
+  vpc_id     = var.vpc_id
+  subnet_ids = var.subnet_ids
 
   enable_irsa = true
 
@@ -21,12 +21,11 @@ module "eks" {
       min_size       = var.node_count
       max_size       = var.node_count
       desired_size   = var.node_count
-      instance_types = var.node_instance_types
+      instance_types = var.node_types
     }
   }
 
   tags = {
     Environment = var.environment
-    Project     = "zorin"
   }
-}
+}   

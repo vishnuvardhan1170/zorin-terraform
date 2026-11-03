@@ -2,13 +2,12 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.8"
 
-  name = "${var.cluster_name}-vpc"
-  cidr = var.vpc_cidr
+  name = var.name
+  cidr = var.cidr
 
-  # Single AZ as requested
-  azs             = ["${var.aws_region}a"]
-  private_subnets = ["10.0.1.0/24"]
-  public_subnets  = ["10.0.2.0/24"]
+  azs             = ["${var.region}a"]
+  private_subnets = ["${split("/", var.cidr)[0]}.1.0/24"]
+  public_subnets  = ["${split("/", var.cidr)[0]}.2.0/24"]
 
   enable_nat_gateway   = true
   single_nat_gateway   = true
@@ -28,6 +27,5 @@ module "vpc" {
 
   tags = {
     Environment = var.environment
-    Project     = "zorin"
   }
-}
+}   

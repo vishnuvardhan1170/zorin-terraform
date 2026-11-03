@@ -7,13 +7,13 @@ output "cluster_name" {
 }
 
 output "ecr_repository_url" {
-  value = aws_ecr_repository.app.repository_url
+  value = module.ecr.repository_url
 }
 
-output "github_ecr_role_arn" {
-  value = aws_iam_role.github_ecr.arn
+output "db_endpoint" {
+  value = module.rds.db_endpoint
 }
 
-output "argocd_url" {
-  value = data.kubernetes_service.argocd.status[0].load_balancer[0].ingress[0].hostname
-}
+output "argocd_ingress_host" {
+  value = module.argocd.ingress_host
+}   

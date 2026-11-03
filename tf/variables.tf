@@ -4,6 +4,11 @@ variable "aws_region" {
   default     = "ap-south-1"
 }
 
+variable "environment" {
+  description = "Environment name"
+  type        = string
+}
+
 variable "cluster_name" {
   description = "EKS cluster name"
   type        = string
@@ -28,12 +33,6 @@ variable "node_count" {
   default     = 1
 }
 
-variable "environment" {
-  description = "Environment name"
-  type        = string
-  default     = "dev"
-}
-
 variable "github_org" {
   description = "GitHub organization"
   type        = string
@@ -43,10 +42,31 @@ variable "github_org" {
 variable "github_repo" {
   description = "GitHub repository"
   type        = string
-  default     = "test"
+  default     = "zorin-infra"
 }
 
-variable "github_oidc_provider_arn" {
+# --- RDS ---
+variable "db_name" {
+  description = "RDS database name"
   type        = string
-  description = "ARN of the GitHub OIDC provider"
+  default     = "zorin"
 }
+
+variable "db_instance_class" {
+  description = "RDS instance class"
+  type        = string
+  default     = "db.t3.micro"
+}
+
+variable "db_multi_az" {
+  description = "Enable multi-AZ for RDS"
+  type        = bool
+  default     = false
+}
+
+# --- ArgoCD ---
+variable "argocd_admin_password" {
+  description = "ArgoCD admin password"
+  type        = string
+  sensitive   = true
+}   
