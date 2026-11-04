@@ -28,12 +28,13 @@ module "rds" {
   subnet_ids   = module.vpc.private_subnets
   vpc_id       = module.vpc.vpc_id
   environment  = var.environment
-}
+  eks_sg_id    = module.eks.node_security_group_id
+}   
 
 module "ecr" {
   source = "./modules/ecr"
 
-  repository_name = "zorin"
+  repository_name = "zorin-app"
 }
 
 module "alb" {

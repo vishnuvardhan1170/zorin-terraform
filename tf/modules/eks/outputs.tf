@@ -14,3 +14,7 @@ output "cluster_name" {
 output "oidc_provider_arn" {
   value = module.eks.oidc_provider_arn
 }   
+
+output "node_security_group_id" {
+  value = module.eks.eks_node_security_group_id
+}   
