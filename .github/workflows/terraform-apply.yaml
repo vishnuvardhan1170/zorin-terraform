@@ -13,18 +13,17 @@ permissions:
 jobs:
   apply:
     runs-on: ubuntu-latest
-    environment: prod
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
-      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e  # v4.0.1
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e
         with:
           terraform_version: "1.7.0"
 
       - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a  # v4.3.1
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a
         with:
-          role-to-assume: arn:aws:iam::ACCOUNT_ID:role/github-actions-terraform
+          role-to-assume: arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/github-actions-terraform
           aws-region: ap-south-1
 
       - name: Terraform Init
@@ -38,4 +37,4 @@ jobs:
 
       - name: Terraform Apply
         working-directory: tf
-        run: terraform apply -auto-approve -input=false -var-file=environments/prod/terraform.tfvars   
+        run: terraform apply -auto-approve -input=false -var-file=environments/prod/terraform.tfvars

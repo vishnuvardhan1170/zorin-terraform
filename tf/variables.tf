@@ -42,26 +42,7 @@ variable "github_org" {
 variable "github_repo" {
   description = "GitHub repository"
   type        = string
-  default     = "zorin-infra"
-}
-
-# --- RDS ---
-variable "db_name" {
-  description = "RDS database name"
-  type        = string
-  default     = "zorin"
-}
-
-variable "db_instance_class" {
-  description = "RDS instance class"
-  type        = string
-  default     = "db.t3.micro"
-}
-
-variable "db_multi_az" {
-  description = "Enable multi-AZ for RDS"
-  type        = bool
-  default     = false
+  default     = "zorin-app"
 }
 
 # --- ArgoCD ---
@@ -69,4 +50,4 @@ variable "argocd_admin_password" {
   description = "ArgoCD admin password"
   type        = string
   sensitive   = true
-}   
+}

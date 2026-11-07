@@ -3,7 +3,7 @@ module "eks" {
   version = "~> 19.19"
 
   cluster_name                    = var.cluster_name
-  cluster_version                 = "1.30"
+  cluster_version                 = "1.33"
   cluster_endpoint_public_access  = true
   cluster_endpoint_private_access = true
 
@@ -28,4 +28,4 @@ module "eks" {
   tags = {
     Environment = var.environment
   }
-}   
+}

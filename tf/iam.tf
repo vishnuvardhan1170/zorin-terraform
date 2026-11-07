@@ -21,7 +21,7 @@ data "aws_iam_policy_document" "ecr_oidc_assume" {
       values   = ["sts.amazonaws.com"]
     }
     condition {
-      test     = "StringEquals"
+      test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
       values   = ["repo:${var.github_org}/${var.github_repo}:ref:refs/heads/main"]
     }
@@ -38,7 +38,7 @@ resource "aws_iam_role_policy" "github_ecr_policy" {
   role = aws_iam_role.github_ecr.id
 
   policy = jsonencode({
-    Version = "2012-01-01"
+    Version = "2012-10-17"
     Statement = [
       {
         Effect   = "Allow"
@@ -78,7 +78,7 @@ data "aws_iam_policy_document" "terraform_oidc_assume" {
       values   = ["sts.amazonaws.com"]
     }
     condition {
-      test     = "StringEquals"
+      test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
       values   = ["repo:${var.github_org}/${var.github_repo}:ref:refs/heads/main"]
     }
@@ -95,16 +95,39 @@ resource "aws_iam_role_policy" "terraform_policy" {
   role = aws_iam_role.terraform.id
 
   policy = jsonencode({
-    Version = "2012-01-01"
+    Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = [
-          "ec2:*",
-          "eks:*",
-          "rds:*",
-          "elasticloadbalancing:*",
-          "ecr:*",
+        Effect   = "Allow"
+        Action   = [
+          "ec2:Describe*",
+          "ec2:CreateSecurityGroup",
+          "ec2:AuthorizeSecurityGroupIngress",
+          "ec2:AuthorizeSecurityGroupEgress",
+          "ec2:CreateTags",
+          "ec2:DeleteTags",
+          "eks:Describe*",
+          "eks:CreateCluster",
+          "eks:DeleteCluster",
+          "eks:CreateNodegroup",
+          "eks:DeleteNodegroup",
+          "eks:ListNodegroups",
+          "eks:UpdateClusterConfig",
+          "elasticloadbalancing:Describe*",
+          "elasticloadbalancing:Create*",
+          "elasticloadbalancing:Delete*",
+          "elasticloadbalancing:AddTags",
+          "elasticloadbalancing:RemoveTags",
+          "ecr:GetAuthorizationToken",
+          "ecr:DescribeRepositories",
+          "ecr:CreateRepository",
+          "ecr:DeleteRepository",
+          "ecr:PutImage",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:InitiateLayerUpload",
+          "ecr:UploadLayerPart",
+          "ecr:CompleteLayerUpload",
           "iam:CreateServiceLinkedRole",
           "iam:PassRole",
           "s3:GetObject",
@@ -113,8 +136,18 @@ resource "aws_iam_role_policy" "terraform_policy" {
           "dynamodb:GetItem",
           "dynamodb:PutItem",
           "dynamodb:DeleteItem",
-          "cloudformation:*",
-          "autoscaling:*",
+          "cloudformation:Describe*",
+          "cloudformation:CreateStack",
+          "cloudformation:DeleteStack",
+          "cloudformation:UpdateStack",
+          "cloudformation:CreateStackInstances",
+          "cloudformation:DeleteStackInstances",
+          "autoscaling:Describe*",
+          "autoscaling:CreateAutoScalingGroup",
+          "autoscaling:DeleteAutoScalingGroup",
+          "autoscaling:UpdateAutoScalingGroup",
+          "autoscaling:CreateTags",
+          "autoscaling:DeleteTags",
           "sts:GetCallerIdentity"
         ]
         Resource = "*"
@@ -129,4 +162,4 @@ output "terraform_role_arn" {
 
 output "ecr_role_arn" {
   value = aws_iam_role.github_ecr.arn
-}   
+}

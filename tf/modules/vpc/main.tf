@@ -5,9 +5,9 @@ module "vpc" {
   name = var.name
   cidr = var.cidr
 
-  azs             = ["${var.region}a"]
-  private_subnets = [cidrsubnet(var.cidr, 8, 1)] 
-  public_subnets  = [cidrsubnet(var.cidr, 8, 2)] 
+  azs             = ["${var.region}a", "${var.region}b"]
+  private_subnets = [cidrsubnet(var.cidr, 8, 1), cidrsubnet(var.cidr, 8, 2)]
+  public_subnets  = [cidrsubnet(var.cidr, 8, 3), cidrsubnet(var.cidr, 8, 4)]
 
   enable_nat_gateway   = true
   single_nat_gateway   = true
@@ -28,4 +28,4 @@ module "vpc" {
   tags = {
     Environment = var.environment
   }
-}   
+}
