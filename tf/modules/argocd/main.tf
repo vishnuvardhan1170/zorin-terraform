@@ -12,23 +12,7 @@ resource "helm_release" "argocd" {
   }
   set {
     name  = "server.service.type"
-    value = "ClusterIP"
-  }
-  set {
-    name  = "global.domain"
-    value = var.ingress_host
-  }
-  set {
-    name  = "server.ingress.enabled"
-    value = "true"
-  }
-  set {
-    name  = "server.ingress.hostname"
-    value = var.ingress_host
-  }
-  set {
-    name  = "server.ingress.ingressClassName"
-    value = "alb"
+    value = "LoadBalancer"
   }
   set {
     name  = "server.insecure"

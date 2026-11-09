@@ -8,7 +8,7 @@ terraform {
     #     --billing-mode PAY_PER_REQUEST
     bucket         = "zorin-terraform-state"
     key            = "terraform.tfstate"
-    region         = "ap-south-1"
+    region         = "ap-southeast-2"
     dynamodb_table = "zorin-terraform-locks"
     encrypt        = true
   }

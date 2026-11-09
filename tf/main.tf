@@ -25,17 +25,6 @@ module "ecr" {
   repository_name = "zorin-app"
 }
 
-module "alb" {
-  source = "./modules/alb"
-
-  cluster_name      = module.eks.cluster_name
-  cluster_endpoint  = module.eks.cluster_endpoint
-  cluster_ca_data   = module.eks.cluster_certificate_authority_data
-  oidc_provider_arn = module.eks.oidc_provider_arn
-  vpc_id            = module.vpc.vpc_id
-  region            = var.aws_region
-}
-
 module "argocd" {
   source = "./modules/argocd"
 
