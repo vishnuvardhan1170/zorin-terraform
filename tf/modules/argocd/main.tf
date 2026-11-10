@@ -12,7 +12,11 @@ resource "helm_release" "argocd" {
   }
   set {
     name  = "server.service.type"
-    value = "LoadBalancer"
+    value = "NodePort"
+  }
+  set {
+    name  = "server.service.nodePortHttp"
+    value = "30081"
   }
   set {
     name  = "server.insecure"
