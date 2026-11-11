@@ -20,21 +20,20 @@ jobs:
         with:
           terraform_version: "1.7.0"
 
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v3
         with:
-          role-to-assume: arn:aws:iam::882088608073:role/github-actions-terraform
-          aws-region: ap-south-1
+          workload_identity_provider: "projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+          service_account: "tf-bot@PROJECT_ID.iam.gserviceaccount.com"
 
       - name: Terraform Init
         working-directory: tf
         run: |
           terraform init \
-            -backend-config="key=prod/terraform.tfstate" \
             -backend-config="bucket=zorin-terraform-state" \
-            -backend-config="region=ap-south-1" \
-            -backend-config="dynamodb_table=zorin-terraform-locks"
+            -backend-config="prefix=prod"
 
       - name: Terraform Apply
         working-directory: tf
-        run: terraform apply -auto-approve -input=false -var-file=environments/prod/terraform.tfvars
+        run: terraform apply -auto-approve -input=false -var-file=environments/prod/terraform.tfvars   

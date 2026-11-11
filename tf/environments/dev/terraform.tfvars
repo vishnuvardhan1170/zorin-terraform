@@ -1,5 +1,6 @@
-environment         = "dev"
-aws_region          = "ap-south-1"
-node_count          = 1
-node_instance_types = ["t3.medium"]
+gcp_project   = "PROJECT_ID"
+gcp_region    = "asia-south1"
+environment   = "dev"
+node_count    = 1
+node_machine_type = "e2-medium"
 argocd_admin_password = "changeme-dev"

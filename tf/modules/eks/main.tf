@@ -22,7 +22,6 @@ module "eks" {
       max_size       = var.node_count
       desired_size   = var.node_count
       instance_types = var.node_types
-      public_access  = true
       # capacity_type  = "SPOT"
     }
   }

@@ -1,11 +1,11 @@
-output "vpc_id" {
-  value = module.vpc.vpc_id
+output "network_name" {
+  value = google_compute_network.vpc.name
 }
 
-output "private_subnets" {
-  value = module.vpc.private_subnets
+output "subnetwork_name" {
+  value = google_compute_subnetwork.nodes.name
 }
 
-output "public_subnets" {
-  value = module.vpc.public_subnets
+output "subnetwork_self_link" {
+  value = google_compute_subnetwork.nodes.self_link
 }   

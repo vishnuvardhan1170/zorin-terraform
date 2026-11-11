@@ -1,15 +1,11 @@
 output "cluster_endpoint" {
-  value = module.eks.cluster_endpoint
+  value = module.gke.cluster_endpoint
 }
 
 output "cluster_name" {
-  value = module.eks.cluster_name
+  value = module.gke.cluster_name
 }
 
-output "ecr_repository_url" {
-  value = module.ecr.repository_url
-}
-
-output "argocd_ingress_host" {
-  value = module.argocd.ingress_host
-}
+output "artifact_registry_url" {
+  value = module.artifact-registry.repository_url
+}   

@@ -1,5 +1,6 @@
-environment         = "prod"
-aws_region          = "ap-south-1"
-node_count          = 3
-node_instance_types = ["t3.large"]
-argocd_admin_password = "changeme-prod"
+gcp_project   = "PROJECT_ID"
+gcp_region    = "asia-south1"
+environment   = "prod"
+node_count    = 3
+node_machine_type = "e2-standard-2"
+argocd_admin_password = "changeme-prod"   

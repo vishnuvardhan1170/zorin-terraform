@@ -1,165 +1,116 @@
-# GitHub OIDC Provider
-resource "aws_iam_openid_connect_provider" "github" {
-  url            = "https://token.actions.githubusercontent.com"
-  client_id_list = ["sts.amazonaws.com"]
+data "google_project" "current" {}
+
+# --- Workload Identity Pool for GitHub Actions ---
+resource "google_iam_workload_identity_pool" "github" {
+  workload_identity_pool_id = "github-pool"
+  display_name              = "GitHub Actions"
 }
 
-# --- ECR Push Role ---
-data "aws_iam_policy_document" "ecr_oidc_assume" {
-  statement {
-    effect  = "Allow"
-    actions = ["sts:AssumeRoleWithWebIdentity"]
+resource "google_iam_workload_identity_pool_provider" "github" {
+  workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
+  workload_identity_pool_provider_id = "github-provider"
+  display_name                       = "GitHub OIDC"
 
-    principals {
-      type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github.arn]
-    }
+  attribute_mapping = {
+    "google.subject"             = "assertion.sub"
+    "attribute.actor"            = "assertion.actor"
+    "attribute.repository"       = "assertion.repository"
+    "attribute.repository_owner" = "assertion.repository_owner"
+    "attribute.ref"              = "assertion.ref"
+  }
 
-    condition {
-      test     = "StringEquals"
-      variable = "token.actions.githubusercontent.com:aud"
-      values   = ["sts.amazonaws.com"]
-    }
-    condition {
-      test     = "StringLike"
-      variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_org}/${var.github_repo}:ref:refs/heads/main"]
-    }
+  attribute_condition = "assertion.repository_owner == '${var.github_org}'"
+
+  oidc {
+    issuer_uri = "https://token.actions.githubusercontent.com"
   }
 }
 
-resource "aws_iam_role" "github_ecr" {
-  name               = "github-actions-ecr-push"
-  assume_role_policy = data.aws_iam_policy_document.ecr_oidc_assume.json
+# --- CI Service Account (build + push images) ---
+resource "google_service_account" "ci" {
+  account_id   = "ci-bot"
+  display_name = "CI Bot"
 }
 
-resource "aws_iam_role_policy" "github_ecr_policy" {
-  name = "ecr-push"
-  role = aws_iam_role.github_ecr.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = ["ecr:GetAuthorizationToken"]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:PutImage",
-          "ecr:InitiateLayerUpload",
-          "ecr:UploadLayerPart",
-          "ecr:CompleteLayerUpload"
-        ]
-        Resource = module.ecr.repository_arn
-      }
-    ]
-  })
+resource "google_service_account_iam_member" "ci_wif" {
+  service_account_id = google_service_account.ci.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/projects/${data.google_project.current.project_number}/locations/global/workloadIdentityPools/github-pool/attribute.repository/${var.github_org}/${var.github_repo}"
 }
 
-# --- Terraform Apply Role ---
-data "aws_iam_policy_document" "terraform_oidc_assume" {
-  statement {
-    effect  = "Allow"
-    actions = ["sts:AssumeRoleWithWebIdentity"]
-
-    principals {
-      type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github.arn]
-    }
-
-    condition {
-      test     = "StringEquals"
-      variable = "token.actions.githubusercontent.com:aud"
-      values   = ["sts.amazonaws.com"]
-    }
-    condition {
-      test     = "StringLike"
-      variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_org}/${var.github_repo}:ref:refs/heads/main"]
-    }
-  }
+resource "google_project_iam_member" "ci_artifact_registry" {
+  project = var.gcp_project
+  role    = "roles/artifactregistry.writer"
+  member  = "serviceAccount:${google_service_account.ci.email}"
 }
 
-resource "aws_iam_role" "terraform" {
-  name               = "github-actions-terraform"
-  assume_role_policy = data.aws_iam_policy_document.terraform_oidc_assume.json
+# --- Deploy Service Account (GitOps tag bump — no GCP resources needed, just git push) ---
+resource "google_service_account" "deploy" {
+  account_id   = "deploy-bot"
+  display_name = "Deploy Bot"
 }
 
-resource "aws_iam_role_policy" "terraform_policy" {
-  name = "terraform-apply"
-  role = aws_iam_role.terraform.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = [
-          "ec2:Describe*",
-          "ec2:CreateSecurityGroup",
-          "ec2:AuthorizeSecurityGroupIngress",
-          "ec2:AuthorizeSecurityGroupEgress",
-          "ec2:CreateTags",
-          "ec2:DeleteTags",
-          "eks:Describe*",
-          "eks:CreateCluster",
-          "eks:DeleteCluster",
-          "eks:CreateNodegroup",
-          "eks:DeleteNodegroup",
-          "eks:ListNodegroups",
-          "eks:UpdateClusterConfig",
-          "elasticloadbalancing:Describe*",
-          "elasticloadbalancing:Create*",
-          "elasticloadbalancing:Delete*",
-          "elasticloadbalancing:AddTags",
-          "elasticloadbalancing:RemoveTags",
-          "ecr:GetAuthorizationToken",
-          "ecr:DescribeRepositories",
-          "ecr:CreateRepository",
-          "ecr:DeleteRepository",
-          "ecr:PutImage",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:InitiateLayerUpload",
-          "ecr:UploadLayerPart",
-          "ecr:CompleteLayerUpload",
-          "iam:CreateServiceLinkedRole",
-          "iam:PassRole",
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:ListBucket",
-          "dynamodb:GetItem",
-          "dynamodb:PutItem",
-          "dynamodb:DeleteItem",
-          "cloudformation:Describe*",
-          "cloudformation:CreateStack",
-          "cloudformation:DeleteStack",
-          "cloudformation:UpdateStack",
-          "cloudformation:CreateStackInstances",
-          "cloudformation:DeleteStackInstances",
-          "autoscaling:Describe*",
-          "autoscaling:CreateAutoScalingGroup",
-          "autoscaling:DeleteAutoScalingGroup",
-          "autoscaling:UpdateAutoScalingGroup",
-          "autoscaling:CreateTags",
-          "autoscaling:DeleteTags",
-          "sts:GetCallerIdentity"
-        ]
-        Resource = "*"
-      }
-    ]
-  })
+resource "google_service_account_iam_member" "deploy_wif" {
+  service_account_id = google_service_account.deploy.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/projects/${data.google_project.current.project_number}/locations/global/workloadIdentityPools/github-pool/attribute.repository/${var.github_org}/${var.github_repo}"
 }
 
-output "terraform_role_arn" {
-  value = aws_iam_role.terraform.arn
+# --- Terraform Service Account ---
+resource "google_service_account" "terraform" {
+  account_id   = "tf-bot"
+  display_name = "Terraform Bot"
 }
 
-output "ecr_role_arn" {
-  value = aws_iam_role.github_ecr.arn
+resource "google_service_account_iam_member" "terraform_wif" {
+  service_account_id = google_service_account.terraform.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/projects/${data.google_project.current.project_number}/locations/global/workloadIdentityPools/github-pool/attribute.repository/${var.github_org}/${var.github_repo}"
 }
+
+resource "google_project_iam_member" "terraform_gke" {
+  project = var.gcp_project
+  role    = "roles/container.admin"
+  member  = "serviceAccount:${google_service_account.terraform.email}"
+}
+
+resource "google_project_iam_member" "terraform_artifact_registry" {
+  project = var.gcp_project
+  role    = "roles/artifactregistry.admin"
+  member  = "serviceAccount:${google_service_account.terraform.email}"
+}
+
+resource "google_project_iam_member" "terraform_compute" {
+  project = var.gcp_project
+  role    = "roles/compute.admin"
+  member  = "serviceAccount:${google_service_account.terraform.email}"
+}
+
+resource "google_project_iam_member" "terraform_storage" {
+  project = var.gcp_project
+  role    = "roles/storage.admin"
+  member  = "serviceAccount:${google_service_account.terraform.email}"
+}
+
+resource "google_project_iam_member" "terraform_service_usage" {
+  project = var.gcp_project
+  role    = "roles/serviceusage.serviceUsageConsumer"
+  member  = "serviceAccount:${google_service_account.terraform.email}"
+}
+
+# --- Outputs ---
+output "wif_provider_full_name" {
+  value = "projects/${data.google_project.current.project_number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github.workload_identity_pool_id}/providers/${google_iam_workload_identity_pool_provider.github.workload_identity_pool_provider_id}"
+}
+
+output "ci_sa_email" {
+  value = google_service_account.ci.email
+}
+
+output "deploy_sa_email" {
+  value = google_service_account.deploy.email
+}
+
+output "terraform_sa_email" {
+  value = google_service_account.terraform.email
+}   

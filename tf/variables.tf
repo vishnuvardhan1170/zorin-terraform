@@ -1,7 +1,12 @@
-variable "aws_region" {
-  description = "AWS region"
+variable "gcp_project" {
+  description = "GCP project ID"
   type        = string
-  default     = "ap-south-1"
+}
+
+variable "gcp_region" {
+  description = "GCP region"
+  type        = string
+  default     = "asia-south1"
 }
 
 variable "environment" {
@@ -10,27 +15,27 @@ variable "environment" {
 }
 
 variable "cluster_name" {
-  description = "EKS cluster name"
+  description = "GKE cluster name"
   type        = string
   default     = "zorin"
 }
 
 variable "vpc_cidr" {
-  description = "VPC CIDR block"
+  description = "VPC subnet CIDR block"
   type        = string
-  default     = "10.0.0.0/16"
-}
-
-variable "node_instance_types" {
-  description = "EKS node instance types"
-  type        = list(string)
-  default     = ["t3.medium"]
+  default     = "10.0.1.0/22"
 }
 
 variable "node_count" {
-  description = "Number of EKS nodes"
+  description = "Number of GKE nodes"
   type        = number
   default     = 1
+}
+
+variable "node_machine_type" {
+  description = "GKE node machine type"
+  type        = string
+  default     = "e2-medium"
 }
 
 variable "github_org" {
@@ -42,12 +47,11 @@ variable "github_org" {
 variable "github_repo" {
   description = "GitHub repository"
   type        = string
-  default     = "zorin-app"
+  default     = "zorin-terraform"
 }
 
-# --- ArgoCD ---
 variable "argocd_admin_password" {
   description = "ArgoCD admin password"
   type        = string
   sensitive   = true
-}
+}   

@@ -3,37 +3,39 @@ module "vpc" {
 
   name         = "${var.cluster_name}-vpc"
   cidr         = var.vpc_cidr
-  region       = var.aws_region
+  region       = var.gcp_region
   cluster_name = var.cluster_name
   environment  = var.environment
 }
 
-module "eks" {
-  source = "./modules/eks"
+module "gke" {
+  source = "./modules/gke"
 
+  project_id   = var.gcp_project
   cluster_name = var.cluster_name
-  vpc_id       = module.vpc.vpc_id
-  subnet_ids   = module.vpc.private_subnets
+  region       = var.gcp_region
+  network      = module.vpc.network_name
+  subnetwork   = module.vpc.subnetwork_name
   node_count   = var.node_count
-  node_types   = var.node_instance_types
+  machine_type = var.node_machine_type
   environment  = var.environment
 }
 
-module "ecr" {
-  source = "./modules/ecr"
+module "artifact-registry" {
+  source = "./modules/artifact-registry"
 
-  repository_name = "zorin-app"
+  project_id    = var.gcp_project
+  location      = var.gcp_region
+  repository_id = "zorin"
 }
 
 module "argocd" {
   source = "./modules/argocd"
 
-  cluster_name      = module.eks.cluster_name
-  cluster_endpoint  = module.eks.cluster_endpoint
-  cluster_ca_data   = module.eks.cluster_certificate_authority_data
-  oidc_provider_arn = module.eks.oidc_provider_arn
-  vpc_id            = module.vpc.vpc_id
-  region            = var.aws_region
-  admin_password    = var.argocd_admin_password
-  ingress_host      = "argocd.${var.environment}.zorin.example.com"
-}
+  project_id       = var.gcp_project
+  cluster_name     = module.gke.cluster_name
+  cluster_endpoint = module.gke.cluster_endpoint
+  cluster_ca_data  = module.gke.cluster_ca_cert
+  region           = var.gcp_region
+  admin_password   = var.argocd_admin_password
+}   
