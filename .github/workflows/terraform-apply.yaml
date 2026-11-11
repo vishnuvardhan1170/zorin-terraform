@@ -14,9 +14,9 @@ jobs:
   apply:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@v4
 
-      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.7.0"
 
@@ -24,8 +24,8 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: "projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
-          service_account: "tf-bot@PROJECT_ID.iam.gserviceaccount.com"
+          workload_identity_provider: "projects/123456789012/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+          service_account: "tf-bot@your-gcp-project.iam.gserviceaccount.com"
 
       - name: Terraform Init
         working-directory: tf
@@ -33,6 +33,10 @@ jobs:
           terraform init \
             -backend-config="bucket=zorin-terraform-state" \
             -backend-config="prefix=prod"
+
+      - name: Terraform Validate
+        working-directory: tf
+        run: terraform validate
 
       - name: Terraform Apply
         working-directory: tf

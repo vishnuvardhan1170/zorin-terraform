@@ -44,7 +44,7 @@ resource "google_project_iam_member" "ci_artifact_registry" {
   member  = "serviceAccount:${google_service_account.ci.email}"
 }
 
-# --- Deploy Service Account (GitOps tag bump — no GCP resources needed, just git push) ---
+# --- Deploy Service Account (GitOps tag bump — no GCP roles needed) ---
 resource "google_service_account" "deploy" {
   account_id   = "deploy-bot"
   display_name = "Deploy Bot"
@@ -98,6 +98,18 @@ resource "google_project_iam_member" "terraform_service_usage" {
   member  = "serviceAccount:${google_service_account.terraform.email}"
 }
 
+# --- GKE Node Service Account (pulls images from Artifact Registry) ---
+resource "google_service_account" "node" {
+  account_id   = "gke-node-sa"
+  display_name = "GKE Node SA"
+}
+
+resource "google_project_iam_member" "node_artifact_registry" {
+  project = var.gcp_project
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${google_service_account.node.email}"
+}
+
 # --- Outputs ---
 output "wif_provider_full_name" {
   value = "projects/${data.google_project.current.project_number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github.workload_identity_pool_id}/providers/${google_iam_workload_identity_pool_provider.github.workload_identity_pool_provider_id}"
@@ -113,4 +125,8 @@ output "deploy_sa_email" {
 
 output "terraform_sa_email" {
   value = google_service_account.terraform.email
+}
+
+output "node_sa_email" {
+  value = google_service_account.node.email
 }   

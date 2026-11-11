@@ -20,6 +20,7 @@ module "gke" {
     disk_size_gb = 50
     auto_repair  = true
     auto_upgrade = true
+    service_account = var.node_service_account
   }
 
   tags = {

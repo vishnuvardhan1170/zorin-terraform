@@ -14,4 +14,13 @@ resource "helm_release" "argocd" {
     name  = "server.service.type"
     value = "LoadBalancer"
   }
+}
+
+resource "helm_release" "argo_rollouts" {
+  name       = "argo-rollouts"
+  repository = "https://argoproj.github.io/argo-helm"
+  chart      = "argo-rollouts"
+  version    = "1.7.0"
+  namespace  = "argo-rollouts"
+  create_namespace = true
 }   
