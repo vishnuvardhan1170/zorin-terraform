@@ -26,7 +26,7 @@ resource "google_iam_workload_identity_pool_provider" "github" {
   }
 }
 
-# --- CI Service Account (build + push images) ---
+# --- CI Service Account ---
 resource "google_service_account" "ci" {
   account_id   = "ci-bot"
   display_name = "CI Bot"
@@ -35,7 +35,7 @@ resource "google_service_account" "ci" {
 resource "google_service_account_iam_member" "ci_wif" {
   service_account_id = google_service_account.ci.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "principalSet://iam.googleapis.com/projects/${data.google_project.current.project_number}/locations/global/workloadIdentityPools/github-pool/attribute.repository/${var.github_org}/${var.github_repo}"
+  member             = "principalSet://iam.googleapis.com/projects/${data.google_project.current.number}/locations/global/workloadIdentityPools/github-pool/attribute.repository/${var.github_org}/${var.github_repo}"
 }
 
 resource "google_project_iam_member" "ci_artifact_registry" {
@@ -44,7 +44,7 @@ resource "google_project_iam_member" "ci_artifact_registry" {
   member  = "serviceAccount:${google_service_account.ci.email}"
 }
 
-# --- Deploy Service Account (GitOps tag bump — no GCP roles needed) ---
+# --- Deploy Service Account ---
 resource "google_service_account" "deploy" {
   account_id   = "deploy-bot"
   display_name = "Deploy Bot"
@@ -53,7 +53,7 @@ resource "google_service_account" "deploy" {
 resource "google_service_account_iam_member" "deploy_wif" {
   service_account_id = google_service_account.deploy.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "principalSet://iam.googleapis.com/projects/${data.google_project.current.project_number}/locations/global/workloadIdentityPools/github-pool/attribute.repository/${var.github_org}/${var.github_repo}"
+  member             = "principalSet://iam.googleapis.com/projects/${data.google_project.current.number}/locations/global/workloadIdentityPools/github-pool/attribute.repository/${var.github_org}/${var.github_repo}"
 }
 
 # --- Terraform Service Account ---
@@ -65,7 +65,7 @@ resource "google_service_account" "terraform" {
 resource "google_service_account_iam_member" "terraform_wif" {
   service_account_id = google_service_account.terraform.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "principalSet://iam.googleapis.com/projects/${data.google_project.current.project_number}/locations/global/workloadIdentityPools/github-pool/attribute.repository/${var.github_org}/${var.github_repo}"
+  member             = "principalSet://iam.googleapis.com/projects/${data.google_project.current.number}/locations/global/workloadIdentityPools/github-pool/attribute.repository/${var.github_org}/${var.github_repo}"
 }
 
 resource "google_project_iam_member" "terraform_gke" {
@@ -98,7 +98,7 @@ resource "google_project_iam_member" "terraform_service_usage" {
   member  = "serviceAccount:${google_service_account.terraform.email}"
 }
 
-# --- GKE Node Service Account (pulls images from Artifact Registry) ---
+# --- GKE Node Service Account ---
 resource "google_service_account" "node" {
   account_id   = "gke-node-sa"
   display_name = "GKE Node SA"
@@ -112,7 +112,7 @@ resource "google_project_iam_member" "node_artifact_registry" {
 
 # --- Outputs ---
 output "wif_provider_full_name" {
-  value = "projects/${data.google_project.current.project_number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github.workload_identity_pool_id}/providers/${google_iam_workload_identity_pool_provider.github.workload_identity_pool_provider_id}"
+  value = "projects/${data.google_project.current.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github.workload_identity_pool_id}/providers/${google_iam_workload_identity_pool_provider.github.workload_identity_pool_provider_id}"
 }
 
 output "ci_sa_email" {

@@ -15,8 +15,10 @@ data "google_client_config" "default" {}
 
 provider "helm" {
   kubernetes {
-    host                   = var.cluster_endpoint
-    cluster_ca_certificate = base64decode(var.cluster_ca_data)
-    token                  = data.google_client_config.default.access_token
+    host = var.cluster_endpoint
+    exec {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      command     = "gke-gcloud-auth-plugin"
+    }
   }
-}   
+}

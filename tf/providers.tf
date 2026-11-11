@@ -17,11 +17,9 @@ provider "google" {
   project = var.gcp_project
   region  = var.gcp_region
 
-  default_tags {
-    tags = {
-      project     = "zorin"
-      environment = var.environment
-      managed_by  = "Terraform"
-    }
+  default_labels = {
+    project     = "zorin"
+    environment = var.environment
+    managed_by  = "Terraform"
   }
 }   

@@ -54,4 +54,5 @@ variable "argocd_admin_password" {
   description = "ArgoCD admin password"
   type        = string
   sensitive   = true
-}   
+}
+

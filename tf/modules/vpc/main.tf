@@ -19,7 +19,4 @@ resource "google_compute_subnetwork" "nodes" {
     ip_cidr_range = "10.2.0.0/20"
   }
 
-  tags {
-    tags = ["gke-${var.cluster_name}"]
-  }
 }   
