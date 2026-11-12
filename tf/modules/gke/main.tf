@@ -2,11 +2,11 @@ module "gke" {
   source  = "terraform-google-modules/kubernetes-engine/google"
   version = "~> 47.0"
 
-  project_id   = var.project_id
-  name         = var.cluster_name
-  region       = var.region
-  network      = var.network
-  subnetwork   = var.subnetwork
+  project_id = var.project_id
+  name       = var.cluster_name
+  region     = var.region
+  network    = var.network
+  subnetwork = var.subnetwork
 
   identity_namespace = "enabled"
 
