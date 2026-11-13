@@ -9,6 +9,7 @@ module "gke" {
   subnetwork = var.subnetwork
 
   identity_namespace = "enabled"
+  deletion_protection = false
 
   remove_default_node_pool = true
   node_pools = [

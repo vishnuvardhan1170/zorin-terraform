@@ -6,10 +6,6 @@ terraform {
       source  = "hashicorp/google"
       version = "~> 7.0"
     }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.15"
-    }
   }
 }
 
@@ -20,6 +16,6 @@ provider "google" {
   default_labels = {
     project     = "zorin"
     environment = var.environment
-    managed_by  = "Terraform"
+    managed_by  = "terraform"
   }
 }   

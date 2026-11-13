@@ -21,9 +21,9 @@ variable "cluster_name" {
 }
 
 variable "vpc_cidr" {
-  description = "VPC subnet CIDR block"
+  description = "GCP subnet CIDR block"
   type        = string
-  default     = "10.0.1.0/22"
+  default     = "172.16.0.0/20"
 }
 
 variable "node_count" {

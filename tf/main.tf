@@ -31,14 +31,3 @@ module "artifact-registry" {
   location      = var.gcp_region
   repository_id = "zorin"
 }
-
-module "argocd" {
-  source = "./modules/argocd"
-
-  project_id       = var.gcp_project
-  cluster_name     = module.gke.cluster_name
-  cluster_endpoint = module.gke.cluster_endpoint
-  cluster_ca_data  = module.gke.cluster_ca_cert
-  region           = var.gcp_region
-  admin_password   = var.argocd_admin_password
-}   
